@@ -81,6 +81,67 @@ public class Ventana extends javax.swing.JFrame {
             return s;
         }
         
+        private Object[][] interpretar(ResultadoEtapa[] rs, Etapa[] info, int macetas){
+
+            int n = rs.length;
+
+            Object[][] tabla = new Object[n+1][4];
+
+            int sumaPersonas = 0;
+            double sumaTiempo = 0;
+
+            for(int k=0;k<n;k++){
+
+                ResultadoEtapa r = rs[k];
+                Etapa e = info[k];
+
+                // tomamos la última fila (ya optimizada por DP)
+                int fila = r.S.length - 1;
+
+                int j = argMin(r.F[fila]);
+
+                int personas = r.D[fila][j];
+
+                int recursos =
+                    e.usaRecursos ? personas / e.operariosPorRecurso : 0;
+
+                double tiempo;
+
+                if(!e.usaRecursos){
+                    // secado
+                    tiempo = e.tiempo + macetas - 1;
+                }else{
+                    if(e.tiempoEsTotal){
+                        tiempo = e.tiempo / Math.max(1,recursos);
+                    }else{
+                        tiempo = (macetas * e.tiempo) / Math.max(1,recursos);
+                    }
+                }
+
+                tabla[k][0] = e.nombre;
+                tabla[k][1] = personas;
+                tabla[k][2] = recursos;
+                tabla[k][3] = String.format("%.2f", tiempo);
+
+                sumaPersonas += personas;
+                sumaTiempo += tiempo;
+            }
+
+            // fila TOTAL
+            tabla[n][0] = "TOTAL";
+            tabla[n][1] = sumaPersonas;
+            tabla[n][2] = "";
+            tabla[n][3] = String.format("%.2f", sumaTiempo);
+
+            return tabla;
+        }
+
+        private int buscar(int[] a,int v){
+            for(int i=0;i<a.length;i++)
+                if(a[i]==v) return i;
+            return -1;
+        }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -91,46 +152,15 @@ public class Ventana extends javax.swing.JFrame {
     private void initComponents() {
 
         jLabel7 = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        spTrituradoras = new javax.swing.JSpinner();
-        jLabel8 = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel16 = new javax.swing.JLabel();
-        spOpTrituradora = new javax.swing.JSpinner();
-        jPanel2 = new javax.swing.JPanel();
-        jLabel9 = new javax.swing.JLabel();
-        jLabel17 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        spBalanzas = new javax.swing.JSpinner();
-        spOpBalanza = new javax.swing.JSpinner();
-        jPanel3 = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
-        spMoldesEngrase = new javax.swing.JSpinner();
-        jLabel10 = new javax.swing.JLabel();
-        jPanel4 = new javax.swing.JPanel();
-        jLabel4 = new javax.swing.JLabel();
-        spBowls = new javax.swing.JSpinner();
-        jLabel11 = new javax.swing.JLabel();
-        jLabel18 = new javax.swing.JLabel();
-        spOpBowl = new javax.swing.JSpinner();
-        jPanel5 = new javax.swing.JPanel();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel19 = new javax.swing.JLabel();
-        spTiempoSecado = new javax.swing.JSpinner();
         btnCalcular = new javax.swing.JButton();
         jPanel7 = new javax.swing.JPanel();
         jLabel14 = new javax.swing.JLabel();
         jLabel15 = new javax.swing.JLabel();
         spOperarios = new javax.swing.JSpinner();
         spMacetas = new javax.swing.JSpinner();
-        jPanel8 = new javax.swing.JPanel();
-        jLabel6 = new javax.swing.JLabel();
-        spMoldesDesmolde = new javax.swing.JSpinner();
-        spOpMolde = new javax.swing.JSpinner();
-        jLabel13 = new javax.swing.JLabel();
-        jLabel20 = new javax.swing.JLabel();
         jPanel6 = new javax.swing.JPanel();
         tabs = new javax.swing.JTabbedPane();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(0, 204, 51));
@@ -138,229 +168,6 @@ public class Ventana extends javax.swing.JFrame {
         jLabel7.setFont(new java.awt.Font("Segoe UI Black", 1, 24)); // NOI18N
         jLabel7.setForeground(new java.awt.Color(255, 255, 255));
         jLabel7.setText("INGRESA LOS PARAMETROS PARA CADA ETAPA");
-
-        jPanel1.setBackground(new java.awt.Color(112, 224, 104));
-        jPanel1.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED, new java.awt.Color(0, 102, 0), new java.awt.Color(0, 102, 0), null, null));
-
-        jLabel8.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
-        jLabel8.setText("Trituradoras:");
-
-        jLabel1.setFont(new java.awt.Font("Roboto SemiCondensed Black", 0, 14)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel1.setText("Etapa Triturado:");
-
-        jLabel16.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
-        jLabel16.setText("Operarios por trituradora:");
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel8)
-                            .addComponent(jLabel16))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(spTrituradoras, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(spOpTrituradora, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap(12, Short.MAX_VALUE)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel8)
-                    .addComponent(spTrituradoras, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel16)
-                    .addComponent(spOpTrituradora, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-        );
-
-        jPanel2.setBackground(new java.awt.Color(112, 221, 104));
-        jPanel2.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED, new java.awt.Color(0, 102, 0), new java.awt.Color(0, 102, 0), null, null));
-
-        jLabel9.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
-        jLabel9.setText("Balanzas:");
-
-        jLabel17.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
-        jLabel17.setText("Operarios por balanza:");
-
-        jLabel2.setFont(new java.awt.Font("Roboto SemiCondensed Black", 0, 14)); // NOI18N
-        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel2.setText("Etapa Medicion:");
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel9)
-                            .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(spBalanzas, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(spOpBalanza, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(spBalanzas, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel17)
-                    .addComponent(spOpBalanza, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
-        );
-
-        jPanel3.setBackground(new java.awt.Color(112, 221, 104));
-        jPanel3.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED, new java.awt.Color(0, 102, 0), new java.awt.Color(0, 102, 0), null, null));
-
-        jLabel3.setFont(new java.awt.Font("Roboto Condensed Black", 0, 14)); // NOI18N
-        jLabel3.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel3.setText("Etapa Engrase:");
-
-        jLabel10.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
-        jLabel10.setText("Numeros moldes libres:");
-
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 159, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(spMoldesEngrase, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel10)
-                    .addComponent(spMoldesEngrase, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(8, Short.MAX_VALUE))
-        );
-
-        jPanel4.setBackground(new java.awt.Color(112, 221, 104));
-        jPanel4.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED, new java.awt.Color(0, 102, 0), new java.awt.Color(0, 102, 0), null, null));
-
-        jLabel4.setFont(new java.awt.Font("Roboto SemiCondensed Black", 0, 14)); // NOI18N
-        jLabel4.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel4.setText("Etapa Mezclado y Vaciado:");
-
-        jLabel11.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
-        jLabel11.setText("Numero de Bowls:");
-
-        jLabel18.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
-        jLabel18.setText("Operarios por Bowl:");
-
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(jLabel18, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(spOpBowl, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(jPanel4Layout.createSequentialGroup()
-                                .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(121, 121, 121)
-                                .addComponent(spBowls, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel4)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel11)
-                    .addComponent(spBowls, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel18)
-                    .addComponent(spOpBowl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
-        );
-
-        jPanel5.setBackground(new java.awt.Color(112, 221, 104));
-        jPanel5.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED, new java.awt.Color(0, 102, 0), new java.awt.Color(0, 102, 0), null, null));
-
-        jLabel5.setFont(new java.awt.Font("Roboto SemiCondensed Black", 0, 14)); // NOI18N
-        jLabel5.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel5.setText("Etapa Secado:");
-
-        jLabel19.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
-        jLabel19.setText("Tiempo de Secado por maceta:");
-
-        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addComponent(jLabel19, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(spTiempoSecado, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addGap(12, 12, 12)
-                .addComponent(jLabel5)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel19)
-                    .addComponent(spTiempoSecado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
 
         btnCalcular.setBackground(new java.awt.Color(14, 57, 14));
         btnCalcular.setFont(new java.awt.Font("Roboto Black", 0, 18)); // NOI18N
@@ -412,55 +219,6 @@ public class Ventana extends javax.swing.JFrame {
                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
-        jPanel8.setBackground(new java.awt.Color(112, 221, 104));
-        jPanel8.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED, new java.awt.Color(0, 102, 0), new java.awt.Color(0, 102, 0), null, null));
-
-        jLabel6.setFont(new java.awt.Font("Roboto SemiCondensed Black", 0, 14)); // NOI18N
-        jLabel6.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel6.setText("Etapa Desmolde:");
-
-        jLabel13.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
-        jLabel13.setText("Numero de moldes libres:");
-
-        jLabel20.setFont(new java.awt.Font("Roboto", 0, 12)); // NOI18N
-        jLabel20.setText("Operarios por molde:");
-
-        javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
-        jPanel8.setLayout(jPanel8Layout);
-        jPanel8Layout.setHorizontalGroup(
-            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel8Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel8Layout.createSequentialGroup()
-                        .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel13, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel20, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(spMoldesDesmolde, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(spOpMolde, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(jPanel8Layout.createSequentialGroup()
-                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        jPanel8Layout.setVerticalGroup(
-            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel8Layout.createSequentialGroup()
-                .addGap(9, 9, 9)
-                .addComponent(jLabel6)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel13)
-                    .addComponent(spMoldesDesmolde, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel20)
-                    .addComponent(spOpMolde, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
         jPanel6.setBackground(new java.awt.Color(76, 192, 68));
 
         tabs.setFont(new java.awt.Font("Roboto Black", 0, 12)); // NOI18N
@@ -482,6 +240,8 @@ public class Ventana extends javax.swing.JFrame {
                 .addGap(20, 20, 20))
         );
 
+        jButton1.setText("CAMBIAR PARAMETROS");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -489,25 +249,19 @@ public class Ventana extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGap(248, 248, 248)
                 .addComponent(jLabel7)
-                .addGap(88, 88, 88))
+                .addGap(88, 343, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGap(12, 12, 12)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 100, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(79, 79, 79))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(btnCalcular, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(312, 312, 312))))
+                .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 178, Short.MAX_VALUE)
+                .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(79, 79, 79))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnCalcular, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(173, 173, 173)
+                .addComponent(jButton1)
+                .addGap(227, 227, 227))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -517,37 +271,24 @@ public class Ventana extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnCalcular, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(40, Short.MAX_VALUE))
+                .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(39, 39, 39)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnCalcular, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1))
+                .addContainerGap(99, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnCalcularActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalcularActionPerformed
-    // y res.dp / res.bestD para solución fina
-        // Limpiar tabs
-        int minDesmolde = (int) spOpMolde.getValue();               // normalmente 2
+            int minDesmolde = 2;
         int minSecado = 0;
-        int minMezcla =  (int) spOpBowl.getValue();              // 2
+        int minMezcla = 2;
         int minEngrase = 1;
-        int minMedicion = (int) spOpBalanza.getValue();            // 2
-        int minTriturado = (int) spOpTrituradora.getValue(); 
+        int minMedicion = 2;
+        int minTriturado = 2;
         
         int[] mins = {
             minDesmolde,
@@ -559,6 +300,49 @@ public class Ventana extends javax.swing.JFrame {
         };
         
         int total = (int) spOperarios.getValue();
+        
+        int minGlobal =
+            minDesmolde +
+            minSecado +
+            minMezcla +
+            minEngrase +
+            minMedicion +
+            minTriturado;
+
+        if(total < minGlobal){
+            javax.swing.JOptionPane.showMessageDialog(this,
+                "No existen suficientes operarios para cubrir los mínimos técnicos.\n" +
+                "Mínimo requerido: " + minGlobal,
+                "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        int libres = total - minGlobal;
+
+        // operarios por recurso (fijos)
+        int opMolde = 2;
+        int opBowl = 2;
+        int opBalanza = 2;
+        int opTrituradora = 2;
+
+        // recursos deducidos
+        int moldesDesmolde = 1 + libres/opMolde;
+        int bowls = 1 + libres/opBowl;
+        int balanzas = 1 + libres/opBalanza;
+        int trituradoras = 1 + libres/opTrituradora;
+
+        // engrase usa moldes
+        int moldesEngrase = moldesDesmolde;
+        
+        // ================= LIMITES FISICOS (CAPACIDAD REAL) =================
+        // Máximo de PERSONAS que realmente pueden trabajar en esa etapa,
+        // según recursos disponibles y operarios por recurso.
+
+        int capDesmolde = moldesDesmolde * opMolde;        // 2 por molde
+        int capMezcla   = bowls * opBowl;                  // 2 por bowl
+        int capMedicion = balanzas * opBalanza;            // 2 por balanza
+        int capTriturado = trituradoras * opTrituradora;   // 2 por trituradora
+        int capEngrase  = moldesEngrase;                   // 1 por molde (engrase)
 
         // Smin acumulado
         int acum = 0;
@@ -582,78 +366,120 @@ public class Ventana extends javax.swing.JFrame {
         int smin6 = total;
         int smax6 = total;
         
+        
         tabs.removeAll();
 
         // ================= DATOS GENERALES =================
         int macetas = (int) spMacetas.getValue();
+        double refMacetas = 20.0;   // del experimento
+        double tTrituradoUnit = 36.0 / refMacetas;
+        double tDes = 0.18 * macetas;
+        double tMez = 1.32 * macetas;
+        double tEng = 0.25 * macetas;
+        double tMed = 1.17 * macetas;
+        double tTri = tTrituradoUnit * macetas;
 
-        // ================= TRITURADO =================
-        int trituradoras = (int) spTrituradoras.getValue();
-        int opTrituradora = (int) spOpTrituradora.getValue();
+        double tiempoSecado = 17;
+        double tSec = tiempoSecado + macetas - 1;
+        
+        double T = Math.max(tSec,
+        Math.max(tTri,
+        Math.max(tMed,
+        Math.max(tEng,tMez))));
 
-        // ================= MEDICION =================
-        int balanzas = (int) spBalanzas.getValue();
-        int opBalanza = (int) spOpBalanza.getValue();
 
-        // ================= ENGRASE =================
-        int moldesEngrase = (int) spMoldesEngrase.getValue();
-
-        // ================= MEZCLA =================
-        int bowls = (int) spBowls.getValue();
-        int opBowl = (int) spOpBowl.getValue();
-
-        // ================= SECADO =================
-        double tiempoSecado = Double.parseDouble(spTiempoSecado.getValue().toString());
-
-        // ================= DESMOLDE =================
-        int moldesDesmolde = (int) spMoldesDesmolde.getValue();
-        int opMolde = (int) spOpMolde.getValue();
+        
 
         // ================= MOTOR =================
         MotorAsignacion motor = new MotorAsignacion(macetas);
 
         // ================= ETAPAS =================
         Etapa desmolde =
-            new Etapa("Desmolde",0.18,opMolde,moldesDesmolde,true,false);
+        new Etapa("Desmolde",0.18,2,moldesDesmolde,true,false);
 
         Etapa secado =
             new Etapa("Secado",tiempoSecado,0,0,false,true);
 
         Etapa mezcla =
-            new Etapa("Mezcla",1.32,opBowl,bowls,true,false);
+            new Etapa("Mezcla",1.32,2,bowls,true,false);
 
         Etapa engrase =
             new Etapa("Engrase",0.25,1,moldesEngrase,true,false);
 
         Etapa medicion =
-            new Etapa("Medicion",1.17,opBalanza,balanzas,true,false);
+            new Etapa("Medicion",1.17,2,balanzas,true,false);
 
         Etapa triturado =
-            new Etapa("Triturado",36,opTrituradora,trituradoras,true,true);
+            new Etapa("Triturado", tTrituradoUnit, opTrituradora, trituradoras, true, false);
 
         // ================= RESOLUCION =================
 
         // Estos rangos S son los del PDF (luego los automatizamos)
 
-        ResultadoEtapa r1 = motor.resolver(desmolde,smin1,smax1,null);
-        tabs.addTab("Desmolde", new JScrollPane(crearTabla(r1)));
+        ResultadoEtapa[] rs = new ResultadoEtapa[6];
 
-        ResultadoEtapa r2 = motor.resolver(secado,smin2,smax2,r1);
-        tabs.addTab("Secado", new JScrollPane(crearTabla(r2)));
+            rs[0] = motor.resolver(desmolde,smin1,smax1,null);
+            tabs.addTab("Desmolde", new JScrollPane(crearTabla(rs[0])));
 
-        ResultadoEtapa r3 = motor.resolver(mezcla,smin3,smax3,r2);
-        tabs.addTab("Mezcla", new JScrollPane(crearTabla(r3)));
+            rs[1] = motor.resolver(secado,smin2,smax2,rs[0]);
+            tabs.addTab("Secado", new JScrollPane(crearTabla(rs[1])));
 
-        ResultadoEtapa r4 = motor.resolver(engrase,smin4,smax4,r3);
-        tabs.addTab("Engrase", new JScrollPane(crearTabla(r4)));
+            rs[2] = motor.resolver(mezcla,smin3,smax3,rs[1]);
+            tabs.addTab("Mezcla", new JScrollPane(crearTabla(rs[2])));
 
-        ResultadoEtapa r5 = motor.resolver(medicion,smin5,smax5,r4);
-        tabs.addTab("Medicion", new JScrollPane(crearTabla(r5)));
+            rs[3] = motor.resolver(engrase,smin4,smax4,rs[2]);
+            tabs.addTab("Engrase", new JScrollPane(crearTabla(rs[3])));
+
+            rs[4] = motor.resolver(medicion,smin5,smax5,rs[3]);
+            tabs.addTab("Medicion", new JScrollPane(crearTabla(rs[4])));
+            
+            int totalOperarios = (int) spOperarios.getValue();
+
+            rs[5] = motor.resolver(triturado,totalOperarios,totalOperarios,rs[4]);
+            tabs.addTab("Triturado", new JScrollPane(crearTabla(rs[5])));
+            
+        String[] nombres = {
+            "Desmolde",
+            "Secado",
+            "Mezcla",
+            "Engrase",
+            "Medicion",
+            "Triturado"
+        };
+
+        Etapa[] info = {
+            desmolde,
+            secado,
+            mezcla,
+            engrase,
+            medicion,
+            triturado
+        };
+
+        Object[][] interp = interpretar(rs, info, macetas);
+
+        javax.swing.JTable tInterp = new javax.swing.JTable(
+            interp,
+            new String[]{"Etapa","Personas","Recursos","Tiempo"}
+        );
+
+        tabs.addTab("Interpretacion", new JScrollPane(tInterp));
         
-        int totalOperarios = (int) spOperarios.getValue();
+        int usados =
+            moldesDesmolde * opMolde +
+            bowls * opBowl +
+            1 +                     // engrase fijo
+            balanzas * opBalanza +
+            trituradoras * opTrituradora;
 
-        ResultadoEtapa r6 = motor.resolver(triturado,totalOperarios,totalOperarios,r5);
-        tabs.addTab("Triturado", new javax.swing.JScrollPane(crearTabla(r6)));
+        int ociosos = totalOperarios - usados;
+
+        if(ociosos > 0){
+            javax.swing.JOptionPane.showMessageDialog(this,
+                "Operarios ociosos: " + ociosos +
+                "\n(Cuello de botella por recursos físicos)");
+        }
+
     }//GEN-LAST:event_btnCalcularActionPerformed
 
     /**
@@ -683,45 +509,14 @@ public class Ventana extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCalcular;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel13;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
-    private javax.swing.JLabel jLabel16;
-    private javax.swing.JLabel jLabel17;
-    private javax.swing.JLabel jLabel18;
-    private javax.swing.JLabel jLabel19;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel20;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
-    private javax.swing.JPanel jPanel8;
-    private javax.swing.JSpinner spBalanzas;
-    private javax.swing.JSpinner spBowls;
     private javax.swing.JSpinner spMacetas;
-    private javax.swing.JSpinner spMoldesDesmolde;
-    private javax.swing.JSpinner spMoldesEngrase;
-    private javax.swing.JSpinner spOpBalanza;
-    private javax.swing.JSpinner spOpBowl;
-    private javax.swing.JSpinner spOpMolde;
-    private javax.swing.JSpinner spOpTrituradora;
     private javax.swing.JSpinner spOperarios;
-    private javax.swing.JSpinner spTiempoSecado;
-    private javax.swing.JSpinner spTrituradoras;
     private javax.swing.JTabbedPane tabs;
     // End of variables declaration//GEN-END:variables
 }
