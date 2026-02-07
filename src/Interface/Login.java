@@ -136,7 +136,7 @@ public class Login extends javax.swing.JFrame {
         String usuario = jTextField1.getText();
     String password = jTextField2.getText();
     // usuario y clave 
-    if (usuario.equals("admin") && password.equals("1234")) {  
+    if (usuario.equals("admin") && password.equals("72296077")) {  
         CambiarTiempo ventanaTiempos = new CambiarTiempo();
                 ventanaTiempos.setVisible(true);
                 this.dispose(); 
