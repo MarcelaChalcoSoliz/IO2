@@ -14,7 +14,7 @@ import logica.MotorAsignacion;
 public class Ventana extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(Ventana.class.getName());
-
+    private static CambiarTiempo tiempos = new CambiarTiempo();
     /**
      * Creates new form Ventana
      */
@@ -81,57 +81,74 @@ public class Ventana extends javax.swing.JFrame {
             return s;
         }
         
-        private Object[][] interpretar(ResultadoEtapa[] rs, Etapa[] info, int macetas){
+        private Object[][] interpretar(ResultadoEtapa[] rs, Etapa[] info, int macetas, int totalOperarios){
 
             int n = rs.length;
+            Object[][] tabla = new Object[n + 1][4];
 
-            Object[][] tabla = new Object[n+1][4];
+            // 1) Arrancamos en la última etapa con S = totalOperarios
+            ResultadoEtapa rFinal = rs[n - 1];
 
+            // En tu caso triturado está fijo (Smin=Smax=total), así que normalmente hay 1 fila,
+            // pero igual lo buscamos bien:
+            int iFinal = buscar(rFinal.S, totalOperarios);
+            if (iFinal < 0) iFinal = 0;
+
+            // Elegimos la mejor columna (decisión) en esa fila final
+            int jFinal = argMin(rFinal.F[iFinal]);
+
+            int s = totalOperarios;
+            int jActual = jFinal;   // ← decisión óptima final
+            
             int sumaPersonas = 0;
             double sumaTiempo = 0;
 
-            for(int k=0;k<n;k++){
+            // 2) Backtracking hacia atrás
+            for(int k = n - 1; k >= 0; k--){
 
                 ResultadoEtapa r = rs[k];
                 Etapa e = info[k];
 
-                // tomamos la última fila (ya optimizada por DP)
-                int fila = r.S.length - 1;
+                int i = buscar(r.S, s);
+                if(i < 0) i = 0;
 
-                int j = argMin(r.F[fila]);
+                int j = argMin(r.F[i]);
 
-                int personas = r.D[fila][j];
+                int personas = r.D[i][j];
 
-                int recursos =
-                    e.usaRecursos ? personas / e.operariosPorRecurso : 0;
+                int recursos = 0;
+                if(e.usaRecursos){
+                    recursos = Math.max(1, personas / e.operariosPorRecurso);
+                }
 
                 double tiempo;
-
                 if(!e.usaRecursos){
-                    // secado
+                    // Secado
                     tiempo = e.tiempo + macetas - 1;
                 }else{
                     if(e.tiempoEsTotal){
-                        tiempo = e.tiempo / Math.max(1,recursos);
+                        tiempo = e.tiempo / recursos;
                     }else{
-                        tiempo = (macetas * e.tiempo) / Math.max(1,recursos);
+                        tiempo = (macetas * e.tiempo) / recursos;
                     }
                 }
 
                 tabla[k][0] = e.nombre;
-                tabla[k][1] = personas;
+                tabla[k][1] = personas + " operarios";
                 tabla[k][2] = recursos;
-                tabla[k][3] = String.format("%.2f", tiempo);
-
-                sumaPersonas += personas;
+                tabla[k][3] = jornadas(tiempo);
                 sumaTiempo += tiempo;
+                sumaPersonas += personas;
+
+                // avanzar estado
+                s -= personas;
             }
 
             // fila TOTAL
             tabla[n][0] = "TOTAL";
             tabla[n][1] = sumaPersonas;
             tabla[n][2] = "";
-            tabla[n][3] = String.format("%.2f", sumaTiempo);
+            tabla[n][3] = jornadas(sumaTiempo);
 
             return tabla;
         }
@@ -141,7 +158,44 @@ public class Ventana extends javax.swing.JFrame {
                 if(a[i]==v) return i;
             return -1;
         }
+        
+        private String formatearTiempo(double minutos){
+            int m = (int)Math.round(minutos);
+            int h = m / 60;
+            int r = m % 60;
+            return h > 0 ? h + " h " + r + " min" : r + " min";
+        }
 
+        private String jornadas(double minutos){
+            int total = (int)Math.round(minutos);
+            int jornada = 8 * 60;
+
+            int j = total / jornada;
+            int r = total % jornada;
+
+            int h = r / 60;
+            int m = r % 60;
+
+            if(j == 0) return h + " h " + m + " min";
+            return j + " jornada(s) + " + h + " h " + m + " min";
+        }
+
+        private Object[][] calcularMateriaPrima(int macetas) {
+
+            double cascaraKg  = macetas * 0.200;   // 200 g
+            double alginatoKg = macetas * 0.018;   // 18 g
+            double aguaL      = macetas * 0.150;   // 150 ml
+            double aceiteL    = macetas * 0.003;   // 3 ml
+
+            Object[][] data = {
+                {"Cáscara de huevo", String.format("%.2f kg", cascaraKg)},
+                {"Alginato",        String.format("%.2f kg", alginatoKg)},
+                {"Agua",            String.format("%.2f L",  aguaL)},
+                {"Aceite",          String.format("%.3f L",  aceiteL)}
+            };
+
+            return data;
+        }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -241,6 +295,11 @@ public class Ventana extends javax.swing.JFrame {
         );
 
         jButton1.setText("CAMBIAR PARAMETROS");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -283,7 +342,7 @@ public class Ventana extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnCalcularActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalcularActionPerformed
-            int minDesmolde = 2;
+        int minDesmolde = 2;
         int minSecado = 0;
         int minMezcla = 2;
         int minEngrase = 1;
@@ -371,16 +430,22 @@ public class Ventana extends javax.swing.JFrame {
 
         // ================= DATOS GENERALES =================
         int macetas = (int) spMacetas.getValue();
-        double refMacetas = 20.0;   // del experimento
-        double tTrituradoUnit = 36.0 / refMacetas;
-        double tDes = 0.18 * macetas;
-        double tMez = 1.32 * macetas;
-        double tEng = 0.25 * macetas;
-        double tMed = 1.17 * macetas;
-        double tTri = tTrituradoUnit * macetas;
+        double tTrituradoUnit = tiempos.getTrituradoUnit();
+        double tiempoSecado   = tiempos.getTiempoSecado();
 
-        double tiempoSecado = 17;
+        double tDesUnit = tiempos.getDesmoldeUnit();
+        double tMezUnit = tiempos.getMezclaUnit();
+        double tEngUnit = tiempos.getEngraseUnit();
+        double tMedUnit = tiempos.getMedicionUnit();
+        
         double tSec = tiempoSecado + macetas - 1;
+        
+        double tDes = tDesUnit * macetas;
+        double tMez = tMezUnit * macetas;
+        double tEng = tEngUnit * macetas;
+        double tMed = tMedUnit * macetas;
+
+        double tTri = tTrituradoUnit * macetas;
         
         double T = Math.max(tSec,
         Math.max(tTri,
@@ -395,19 +460,19 @@ public class Ventana extends javax.swing.JFrame {
 
         // ================= ETAPAS =================
         Etapa desmolde =
-        new Etapa("Desmolde",0.18,2,moldesDesmolde,true,false);
+        new Etapa("Desmolde", tDesUnit,2,moldesDesmolde,true,false);
 
         Etapa secado =
             new Etapa("Secado",tiempoSecado,0,0,false,true);
 
         Etapa mezcla =
-            new Etapa("Mezcla",1.32,2,bowls,true,false);
+            new Etapa("Mezcla", tMezUnit,2,bowls,true,false);
 
         Etapa engrase =
-            new Etapa("Engrase",0.25,1,moldesEngrase,true,false);
+            new Etapa("Engrase", tEngUnit,1,moldesEngrase,true,false);
 
         Etapa medicion =
-            new Etapa("Medicion",1.17,2,balanzas,true,false);
+            new Etapa("Medicion", tMedUnit,2,balanzas,true,false);
 
         Etapa triturado =
             new Etapa("Triturado", tTrituradoUnit, opTrituradora, trituradoras, true, false);
@@ -456,7 +521,7 @@ public class Ventana extends javax.swing.JFrame {
             triturado
         };
 
-        Object[][] interp = interpretar(rs, info, macetas);
+        Object[][] interp = interpretar(rs, info, macetas, total);
 
         javax.swing.JTable tInterp = new javax.swing.JTable(
             interp,
@@ -479,8 +544,26 @@ public class Ventana extends javax.swing.JFrame {
                 "Operarios ociosos: " + ociosos +
                 "\n(Cuello de botella por recursos físicos)");
         }
+        
+        Object[][] mp = calcularMateriaPrima(macetas);
+
+        JTable tMP = new JTable(
+            mp,
+            new String[]{"Material", "Cantidad requerida"}
+        );
+
+        tabs.addTab("Materia Prima", new JScrollPane(tMP));
 
     }//GEN-LAST:event_btnCalcularActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        Login log = new Login();
+        log.setVisible(true);
+
+        // Cerrar la ventana CambiarTiempo
+        this.dispose();
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments

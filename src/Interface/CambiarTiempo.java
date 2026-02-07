@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package Interface;
 
 /**
@@ -11,13 +7,89 @@ package Interface;
 public class CambiarTiempo extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CambiarTiempo.class.getName());
+    private double refMacetas;
+    private double tiempoTrituradoTotal;
+
+    private double tDesmoldeUnit;
+    private double tMezclaUnit;
+    private double tEngraseUnit;
+    private double tMedicionUnit;
+    private double tiempoSecado;
 
     /**
      * Creates new form CambiarTiempo
      */
     public CambiarTiempo() {
         initComponents();
+        this.refMacetas = 20.0;
+        this.tiempoTrituradoTotal = 36.0;
+
+        this.tDesmoldeUnit = 0.18;
+        this.tMezclaUnit   = 1.32;
+        this.tEngraseUnit  = 0.25;
+        this.tMedicionUnit = 1.17;
+
+        this.tiempoSecado = 17.0;
+    jTextField1.setText(String.valueOf(getTrituradoUnit()));
+    jTextField2.setText(String.valueOf(tMedicionUnit));
+    jTextField3.setText(String.valueOf(tEngraseUnit));
+    jTextField4.setText(String.valueOf(tMezclaUnit));
+    jTextField5.setText(String.valueOf(tiempoSecado));
+    jTextField6.setText(String.valueOf(tDesmoldeUnit));
     }
+      public double getTrituradoUnit() {
+        return tiempoTrituradoTotal / refMacetas;
+    }
+
+    public double getDesmoldeUnit() {
+        return tDesmoldeUnit;
+    }
+
+    public double getMezclaUnit() {
+        return tMezclaUnit;
+    }
+
+    public double getEngraseUnit() {
+        return tEngraseUnit;
+    }
+
+    public double getMedicionUnit() {
+        return tMedicionUnit;
+    }
+
+    public double getTiempoSecado() {
+        return tiempoSecado;
+    }
+    
+    
+    public void setRefMacetas(double refMacetas) {
+        this.refMacetas = refMacetas;
+    }
+
+    public void setTiempoTrituradoTotal(double tiempoTrituradoTotal) {
+        this.tiempoTrituradoTotal = tiempoTrituradoTotal;
+    }
+
+    public void setDesmoldeUnit(double tDesmoldeUnit) {
+        this.tDesmoldeUnit = tDesmoldeUnit;
+    }
+
+    public void setMezclaUnit(double tMezclaUnit) {
+        this.tMezclaUnit = tMezclaUnit;
+    }
+
+    public void setEngraseUnit(double tEngraseUnit) {
+        this.tEngraseUnit = tEngraseUnit;
+    }
+
+    public void setMedicionUnit(double tMedicionUnit) {
+        this.tMedicionUnit = tMedicionUnit;
+    }
+
+    public void setTiempoSecado(double tiempoSecado) {
+        this.tiempoSecado = tiempoSecado;
+    }
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -207,6 +279,12 @@ public class CambiarTiempo extends javax.swing.JFrame {
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
+        // Abrir la ventana principal
+        Ventana v = new Ventana();
+        v.setVisible(true);
+
+        // Cerrar la ventana CambiarTiempo
+        this.dispose();
     }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
