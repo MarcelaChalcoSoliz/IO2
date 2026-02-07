@@ -132,6 +132,17 @@ public class Login extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
+        String usuario = jTextField1.getText();
+    String password = jTextField2.getText();
+    // usuario y clave 
+    if (usuario.equals("admin") && password.equals("1234")) {  
+        CambiarTiempo ventanaTiempos = new CambiarTiempo();
+                ventanaTiempos.setVisible(true);
+                this.dispose(); 
+        
+    } else {
+        javax.swing.JOptionPane.showMessageDialog(this, "Usuario o Contraseña incorrectos", "Error de Login", javax.swing.JOptionPane.ERROR_MESSAGE);
+    }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
